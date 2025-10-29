@@ -1,0 +1,155 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f2f2f2;
+    color: #1c1e21;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #4267B2;
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.post-form {
+    background-color: #ffffff;
+    padding: 15px;
+    border-bottom: 1px solid #dddfe2;
+}
+
+#name-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    background-color: #f0f2f5;
+}
+
+#name-input:focus {
+    outline: none;
+    border-color: #4267B2;
+    background-color: #ffffff;
+}
+
+#content-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 16px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    resize: none;
+    min-height: 100px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    background-color: #f0f2f5;
+}
+
+#content-input:focus {
+    outline: none;
+    border-color: #4267B2;
+    background-color: #ffffff;
+}
+
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.char-count {
+    font-size: 14px;
+    color: #65676b;
+}
+
+#post-btn {
+    background-color: #4267B2;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#post-btn:hover {
+    background-color: #365899;
+}
+
+#post-btn:active {
+    background-color: #29487d;
+}
+
+#post-btn:disabled {
+    background-color: #ccd0d5;
+    cursor: not-allowed;
+}
+
+.timeline {
+    padding: 10px 15px;
+}
+
+.post {
+    background-color: #ffffff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.post-name {
+    font-weight: 600;
+    color: #1c1e21;
+    font-size: 15px;
+    margin-right: 8px;
+}
+
+.post-time {
+    font-size: 13px;
+    color: #65676b;
+}
+
+.post-content {
+    font-size: 15px;
+    color: #1c1e21;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.empty-timeline {
+    text-align: center;
+    padding: 40px 20px;
+    color: #65676b;
+    font-size: 15px;
+}
+

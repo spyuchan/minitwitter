@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniTwitter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MiniTwitter</h1>
+        </header>
+        
+        <div class="post-form">
+            <input 
+                type="text" 
+                id="name-input" 
+                placeholder="あなたの名前"
+                maxlength="50"
+            >
+            <textarea 
+                id="content-input" 
+                placeholder="何かつぶやいてみましょう (最大140字)"
+                maxlength="140"
+            ></textarea>
+            <div class="form-footer">
+                <span class="char-count">
+                    <span id="char-count">0</span>/140
+                </span>
+                <button id="post-btn">投稿</button>
+            </div>
+        </div>
+        
+        <div class="timeline" id="timeline">
+            <!-- 投稿がここに表示されます -->
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
+
