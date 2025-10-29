@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="ja">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Timeline</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: #f5f5f7;
+            min-height: 100%;
+        }
+
+        .container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e7;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .app-title {
+            color: #1d1d1f;
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .post-form {
+            padding: 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            color: #1d1d1f;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #ffffff;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            color: #1d1d1f;
+        }
+
+        .form-input::placeholder {
+            color: #86868b;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: none;
+            height: 100px;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #86868b;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .char-counter.warning {
+            color: #ff3b30;
+        }
+
+        .post-button {
+            width: 100%;
+            padding: 14px;
+            background: #007aff;
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .post-button:hover {
+            background: #0051d5;
+        }
+
+        .post-button:active {
+            transform: scale(0.98);
+        }
+
+        .post-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .timeline {
+            padding: 16px;
+            background: #f5f5f7;
+            min-height: 400px;
+        }
+
+        .timeline-title {
+            color: #1d1d1f;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            padding: 0 4px;
+        }
+
+        .post-item {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e5e5e7;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .post-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .post-author {
+            font-weight: 600;
+            color: #1d1d1f;
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .post-content {
+            color: #1d1d1f;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .post-time {
+            color: #86868b;
+            font-size: 12px;
+            text-align: right;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #86868b;
+            font-size: 15px;
+            margin-top: 60px;
+            padding: 0 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #86868b;
+            font-size: 14px;
+            margin: 16px 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e5e5e7;
+            border-radius: 50%;
+            border-top-color: #007aff;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <header class="header">
+    <h1 class="app-title" id="appTitle">Social Timeline</h1>
+   </header>
+   <div class="post-form">
+    <form id="postForm">
+     <div class="form-group"><label for="nameInput" class="form-label">お名前</label> <input type="text" id="nameInput" class="form-input" placeholder="あなたの名前を入力" required maxlength="20">
+     </div>
+     <div class="form-group"><label for="contentInput" class="form-label">投稿内容</label> <textarea id="contentInput" class="form-input form-textarea" placeholder="今何してる？" required maxlength="140"></textarea>
+      <div class="char-counter" id="charCounter">
+       0/140
+      </div>
+     </div><button type="submit" class="post-button" id="postButton"> <span id="postButtonText">投稿する</span> </button>
+    </form>
+   </div>
+   <div class="timeline">
+    <h2 class="timeline-title">タイムライン</h2>
+    <div class="loading" id="loading">
+     <div class="spinner"></div> 投稿中...
+    </div>
+    <div id="timelineContainer">
+     <div class="empty-state" id="emptyState">
+      まだ投稿がありません✨<br>
+       最初の投稿をしてみましょう！
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        let posts = [];
+        let recordCount = 0;
+
+        const defaultConfig = {
+            app_title: "Social Timeline",
+            post_button_text: "投稿する"
+        };
+
+        const dataHandler = {
+            onDataChanged(data) {
+                posts = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                recordCount = data.length;
+                renderTimeline();
+            }
+        };
+
+        async function initializeApp() {
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                    // dataSdk初期化に失敗した場合、ローカルストレージから読み込む
+                    loadPostsFromLocalStorage();
+                }
+            } else {
+                // window.dataSdkが存在しない場合、ローカルストレージから読み込む
+                loadPostsFromLocalStorage();
+            }
+
+            if (window.elementSdk) {
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange: async (config) => {
+                        const appTitle = document.getElementById('appTitle');
+                        const postButtonText = document.getElementById('postButtonText');
+                        
+                        if (appTitle) {
+                            appTitle.textContent = config.app_title || defaultConfig.app_title;
+                        }
+                        if (postButtonText) {
+                            postButtonText.textContent = config.post_button_text || defaultConfig.post_button_text;
+                        }
+                    },
+                    mapToCapabilities: (config) => ({
+                        recolorables: [
+                            {
+                                get: () => config.primary_color || "#667eea",
+                                set: (value) => {
+                                    config.primary_color = value;
+                                    window.elementSdk.setConfig({ primary_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.secondary_color || "#ffeaa7",
+                                set: (value) => {
+                                    config.secondary_color = value;
+                                    window.elementSdk.setConfig({ secondary_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.accent_color || "#fd79a8",
+                                set: (value) => {
+                                    config.accent_color = value;
+                                    window.elementSdk.setConfig({ accent_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.timeline_color || "#74b9ff",
+                                set: (value) => {
+                                    config.timeline_color = value;
+                                    window.elementSdk.setConfig({ timeline_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.text_color || "#2d3436",
+                                set: (value) => {
+                                    config.text_color = value;
+                                    window.elementSdk.setConfig({ text_color: value });
+                                }
+                            }
+                        ],
+                        borderables: [],
+                        fontEditable: {
+                            get: () => config.font_family || "Helvetica Neue",
+                            set: (value) => {
+                                config.font_family = value;
+                                window.elementSdk.setConfig({ font_family: value });
+                            }
+                        },
+                        fontSizeable: {
+                            get: () => config.font_size || 16,
+                            set: (value) => {
+                                config.font_size = value;
+                                window.elementSdk.setConfig({ font_size: value });
+                            }
+                        }
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["app_title", config.app_title || defaultConfig.app_title],
+                        ["post_button_text", config.post_button_text || defaultConfig.post_button_text]
+                    ])
+                });
+            }
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timelineContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (posts.length === 0) {
+                emptyState.style.display = 'block';
+                container.innerHTML = '<div class="empty-state" id="emptyState">まだ投稿がありません✨<br>最初の投稿をしてみましょう！</div>';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            const existingPosts = new Map();
+            [...container.children].forEach(el => {
+                if (el.dataset.postId) {
+                    existingPosts.set(el.dataset.postId, el);
+                }
+            });
+            
+            posts.forEach((post, index) => {
+                if (!existingPosts.has(post.id)) {
+                    const postElement = createPostElement(post);
+                    if (index === 0) {
+                        container.insertBefore(postElement, container.firstChild);
+                    } else {
+                        container.appendChild(postElement);
+                    }
+                }
+                existingPosts.delete(post.id);
+            });
+            
+            existingPosts.forEach(el => el.remove());
+        }
+
+        function createPostElement(post) {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post-item';
+            postDiv.dataset.postId = post.id;
+            
+            const date = new Date(post.timestamp);
+            const timeString = date.toLocaleString('ja-JP', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            postDiv.innerHTML = `
+                <div class="post-author">${escapeHtml(post.name)}</div>
+                <div class="post-content">${escapeHtml(post.content)}</div>
+                <div class="post-time">${timeString}</div>
+            `;
+            
+            return postDiv;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateCharCounter() {
+            const contentInput = document.getElementById('contentInput');
+            const charCounter = document.getElementById('charCounter');
+            const length = contentInput.value.length;
+            
+            charCounter.textContent = `${length}/140`;
+            
+            if (length > 120) {
+                charCounter.classList.add('warning');
+            } else {
+                charCounter.classList.remove('warning');
+            }
+        }
+
+        let savedName = localStorage.getItem('socialTimelineName') || '';
+        let isComposing = false;
+
+        function loadPostsFromLocalStorage() {
+            try {
+                const storedPosts = JSON.parse(localStorage.getItem('socialTimelinePosts') || '[]');
+                posts = storedPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                recordCount = storedPosts.length;
+                renderTimeline();
+            } catch (error) {
+                console.error('Failed to load posts from localStorage:', error);
+                posts = [];
+                recordCount = 0;
+                renderTimeline();
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            if (recordCount >= 999) {
+                const customModal = document.createElement('div');
+                customModal.style.cssText = `
+                    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                    justify-content: center; z-index: 1000;
+                `;
+                customModal.innerHTML = `
+                    <div style="background: white; padding: 24px; border-radius: 16px; text-align: center; max-width: 300px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                        <p style="color: #1d1d1f; font-size: 15px; margin: 0 0 20px 0; line-height: 1.5;">投稿の上限（999件）に達しました。<br>これ以上投稿できません。</p>
+                        <button onclick="this.closest('div').remove()" style="padding: 12px 24px; background: #007aff; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;">OK</button>
+                    </div>
+                `;
+                document.body.appendChild(customModal);
+                return;
+            }
+            
+            const nameInput = document.getElementById('nameInput');
+            const contentInput = document.getElementById('contentInput');
+            const postButton = document.getElementById('postButton');
+            const loading = document.getElementById('loading');
+            
+            const name = nameInput.value.trim();
+            const content = contentInput.value.trim();
+            
+            if (!name || !content) return;
+            
+            // 名前を保存
+            localStorage.setItem('socialTimelineName', name);
+            
+            postButton.disabled = true;
+            loading.classList.add('show');
+            
+            const newPost = {
+                id: Date.now().toString(),
+                name: name,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+            
+            let success = false;
+            
+            if (window.dataSdk) {
+                const result = await window.dataSdk.create(newPost);
+                if (result.isOk) {
+                    success = true;
+                } else {
+                    const errorModal = document.createElement('div');
+                    errorModal.style.cssText = `
+                        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                        justify-content: center; z-index: 1000;
+                    `;
+                    errorModal.innerHTML = `
+                        <div style="background: white; padding: 24px; border-radius: 16px; text-align: center; max-width: 300px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                            <p style="color: #1d1d1f; font-size: 15px; margin: 0 0 20px 0; line-height: 1.5;">投稿に失敗しました。<br>もう一度お試しください。</p>
+                            <button onclick="this.closest('div').remove()" style="padding: 12px 24px; background: #007aff; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(errorModal);
+                }
+            } else {
+                // window.dataSdkが存在しない場合のフォールバック（ローカルストレージを使用）
+                try {
+                    const storedPosts = JSON.parse(localStorage.getItem('socialTimelinePosts') || '[]');
+                    storedPosts.push(newPost);
+                    localStorage.setItem('socialTimelinePosts', JSON.stringify(storedPosts));
+                    
+                    // タイムラインを更新
+                    posts = storedPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    recordCount = storedPosts.length;
+                    renderTimeline();
+                    
+                    success = true;
+                } catch (error) {
+                    console.error('Failed to save post to localStorage:', error);
+                    const errorModal = document.createElement('div');
+                    errorModal.style.cssText = `
+                        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                        justify-content: center; z-index: 1000;
+                    `;
+                    errorModal.innerHTML = `
+                        <div style="background: white; padding: 24px; border-radius: 16px; text-align: center; max-width: 300px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                            <p style="color: #1d1d1f; font-size: 15px; margin: 0 0 20px 0; line-height: 1.5;">投稿に失敗しました。<br>もう一度お試しください。</p>
+                            <button onclick="this.closest('div').remove()" style="padding: 12px 24px; background: #007aff; color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%;">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(errorModal);
+                }
+            }
+            
+            if (success) {
+                // 投稿内容のみクリア、名前は保持
+                contentInput.value = '';
+                updateCharCounter();
+            }
+            
+            postButton.disabled = false;
+            loading.classList.remove('show');
+        }
+
+        function handleKeyDown(event) {
+            // 日本語入力中は無視
+            if (isComposing) return;
+            
+            // Enterキーが押された場合
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                handleSubmit(event);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            
+            const nameInput = document.getElementById('nameInput');
+            const contentInput = document.getElementById('contentInput');
+            const postForm = document.getElementById('postForm');
+            
+            // 保存された名前を復元
+            if (savedName) {
+                nameInput.value = savedName;
+            }
+            
+            // 日本語入力の状態を監視
+            contentInput.addEventListener('compositionstart', () => {
+                isComposing = true;
+            });
+            
+            contentInput.addEventListener('compositionend', () => {
+                isComposing = false;
+            });
+            
+            // Enterキーでの投稿
+            contentInput.addEventListener('keydown', handleKeyDown);
+            
+            contentInput.addEventListener('input', updateCharCounter);
+            postForm.addEventListener('submit', handleSubmit);
+            
+            updateCharCounter();
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962d3f54484d503',t:'MTc2MTc0MjUzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
