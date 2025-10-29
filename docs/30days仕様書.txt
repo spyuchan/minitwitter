@@ -1,0 +1,3 @@
+本日の30日後の日付を計算するプログラムをpythonで書いて、
+program/30dayslater.py
+に出力して
